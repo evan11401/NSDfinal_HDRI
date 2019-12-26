@@ -11,7 +11,7 @@
 #include <sstream>
 #include <functional>
 
-using namespace cv
+namespace cv
 {
 
 class Align
@@ -238,4 +238,5 @@ PYBIND11_MODULE(_align, m) {
 	        .def(py::init<>())
 		.def("process", &Align::process);
 
+}
 }
