@@ -6,7 +6,7 @@ def readImagesAndTimes():
   
   times = np.array([ 1/30.0, 0.25, 2.5, 15.0 ], dtype=np.float32)
   
-  filenames = ["img_0.033.jpg", "img_0.25.jpg", "img_2.5.jpg", "img_15.jpg"]
+  filenames = ["imgs/img_0.033.jpg", "imgs/img_0.25.jpg", "imgs/img_2.5.jpg", "imgs/img_15.jpg"]
   
   images = []
   for filename in filenames:
@@ -25,6 +25,9 @@ if __name__ == '__main__':
   # Align input images
   print("Aligning images ... ")
   alignMTB = cv2.createAlignMTB()
+  print(type(images))
+  for i in range(len(images)):
+    print(type(images[i]))
   alignMTB.process(images, images)
   
   # Obtain Camera Response Function (CRF)
