@@ -59,23 +59,19 @@ def readImagesAndTimes():
 
 class GradingTest(unittest.TestCase):
 
-    def test_basic(self):
-        i = _align.ret1()
-        self.assertEqual(i, 1)
-
     def test_align(self):
         images, times = readImagesAndTimes()
-        images_origin = images
-        images_our = images
+        images_cv = images.copy()
         print(images[0].shape)
         # Align input images
         print("Aligning images ... ")
         alignMTB = cv2.createAlignMTB()
-        alignMTB.process(images, images)
+        alignMTB.process(images, images_cv)
         
-        #_align.process(images, images_our)
-        for i in len(images):
-            self.assertEqual(images_origin[i].shape, images[i].shape)
-        
+        images_our = _align.process(images)
+        # images_our = _align.copy_arr(images[0])
+        #for i in range(len(images)):
+            #self.assertEqual(images_cv[i].shape, images_our[i].shape)
+
 
 # vim: set fenc=utf8 ff=unix et sw=4 ts=4 sts=4:

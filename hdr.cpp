@@ -1,6 +1,7 @@
 #include <opencv2/photo.hpp>
 #include "opencv2/imgcodecs.hpp"
 #include <opencv2/highgui.hpp>
+
 #include <vector>
 #include <iostream>
 #include <fstream>
@@ -16,7 +17,7 @@ void readImagesAndTimes(vector<Mat> &images, vector<float> &times)
   static const float timesArray[] = {1/30.0f,0.25,2.5,15.0};
   times.assign(timesArray, timesArray + numImages);
   
-  static const char* filenames[] = {"img_0.033.jpg", "img_0.25.jpg", "img_2.5.jpg", "img_15.jpg"};
+  static const char* filenames[] = {"imgs/img_0.033.jpg", "imgs/img_0.25.jpg", "imgs/img_2.5.jpg", "imgs/img_15.jpg"};
   for(int i=0; i < numImages; i++)
   {
     Mat im = imread(filenames[i]);
@@ -62,15 +63,6 @@ int main(int, char**argv)
   ldrDrago = 3 * ldrDrago;
   imwrite("ldr-Drago.jpg", ldrDrago * 255);
   cout << "saved ldr-Drago.jpg"<< endl;
-  
-  // Tonemap using Durand's method obtain 24-bit color image
-  cout << "Tonemaping using Durand's method ... ";
-  Mat ldrDurand;
-  Ptr<TonemapDurand> tonemapDurand = createTonemapDurand(1.5,4,1.0,1,1);
-  tonemapDurand->process(hdrDebevec, ldrDurand);
-  ldrDurand = 3 * ldrDurand;
-  imwrite("ldr-Durand.jpg", ldrDurand * 255);
-  cout << "saved ldr-Durand.jpg"<< endl;
   
   // Tonemap using Reinhard's method to obtain 24-bit color image
   cout << "Tonemaping using Reinhard's method ... ";

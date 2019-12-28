@@ -1,7 +1,5 @@
 #include "env.hpp"
-namespace py = pybind11;
-
-using namespace cv;
+#include"converter.h"
 
 
 class Align
@@ -212,13 +210,33 @@ protected:
     }
 };
 
-
-int ret1(){
-    return 1;
+py::array copy_array(py::array in_arr){
+    py::array ret_arr = py::array(in_arr.dtype(),
+                                  {in_arr.shape(), in_arr.shape()+in_arr.ndim()},
+                                  {in_arr.strides(), in_arr.strides()+in_arr.ndim()},
+                                  in_arr.data(),
+                                  in_arr);
+    return ret_arr;
 }
-PYBIND11_MODULE(_align, m) {
-	m.doc() = "Align";
-    //m.def("process", &Align::process);
-    m.def("ret1", &ret1);
+std::vector<py::array_t<unsigned char>> process(std::vector<py::array_t<unsigned char>> src){
+    std::vector<py::array_t<unsigned char>> ret_vector;
+    ret_vector.assign(src.begin(), src.end());
+    Align obj = Align();
+    //obj.process(src, ret_vector);
+    vector<Mat> mat_src;
+    for(uint i=0;i<src.size();i++){
+        py::buffer_info buf = src[i].request();
+        Mat mat(buf.shape[0], buf.shape[1], CV_8UC3, (unsigned char*)buf.ptr);
+        imwrite("aaa.jpg", mat);
+    }
+    return ret_vector;
+}
 
+
+PYBIND11_MODULE(_align, m) {
+	m.doc() = "Align";    
+    //m.def("process", &processs);
+    m.def("copy_arr", &copy_array, "copy array (generic)");
+    m.def("process", &process, "process");
+   
 }
