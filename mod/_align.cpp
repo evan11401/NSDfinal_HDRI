@@ -1,6 +1,5 @@
 #include "env.hpp"
-#include"converter.h"
-
+using namespace std;
 
 class Align
 {
@@ -13,18 +12,8 @@ public:
     {
     }
 
-    /*void process(InputArrayOfArrays src, std::vector<Mat>& dst,
-                 InputArray, InputArray) CV_OVERRIDE
-    {
-        process(src, dst);
-    }*/
-    
     void process(std::vector<Mat>& src, std::vector<Mat>& dst)
-    {
-
-        //std::vector<Mat> src;
-        //_src.getMatVector(src);
-
+    {     
         dst.resize(src.size());
 
         size_t pivot = src.size() / 2;
@@ -210,24 +199,21 @@ protected:
     }
 };
 
-py::array copy_array(py::array in_arr){
-    py::array ret_arr = py::array(in_arr.dtype(),
-                                  {in_arr.shape(), in_arr.shape()+in_arr.ndim()},
-                                  {in_arr.strides(), in_arr.strides()+in_arr.ndim()},
-                                  in_arr.data(),
-                                  in_arr);
-    return ret_arr;
-}
 std::vector<py::array_t<unsigned char>> process(std::vector<py::array_t<unsigned char>> src){
-    std::vector<py::array_t<unsigned char>> ret_vector;
-    ret_vector.assign(src.begin(), src.end());
+    
     Align obj = Align();
     //obj.process(src, ret_vector);
-    vector<Mat> mat_src;
+    vector<Mat> mat_src, mat_ret;
     for(uint i=0;i<src.size();i++){
         py::buffer_info buf = src[i].request();
         Mat mat(buf.shape[0], buf.shape[1], CV_8UC3, (unsigned char*)buf.ptr);
-        imwrite("aaa.jpg", mat);
+        mat_src.push_back(mat);
+    }
+    obj.process(mat_src, mat_ret);
+    std::vector<py::array_t<unsigned char>> ret_vector;
+    for(int i=0;i<mat_ret.size();i++){
+        py::array_t<unsigned char> dst = py::array_t<unsigned char>({ mat_ret[i].rows,mat_ret[i].cols,3}, mat_ret[i].data);
+        ret_vector.push_back(dst);
     }
     return ret_vector;
 }
@@ -235,8 +221,6 @@ std::vector<py::array_t<unsigned char>> process(std::vector<py::array_t<unsigned
 
 PYBIND11_MODULE(_align, m) {
 	m.doc() = "Align";    
-    //m.def("process", &processs);
-    m.def("copy_arr", &copy_array, "copy array (generic)");
-    m.def("process", &process, "process");
+     m.def("process", &process, "process");
    
 }

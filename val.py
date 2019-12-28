@@ -42,6 +42,7 @@ import cv2
 import numpy as np
 
 import _align
+import _calCRF
 
 def readImagesAndTimes():
   
@@ -56,22 +57,38 @@ def readImagesAndTimes():
   
   return images, times
 
-
+images, times = readImagesAndTimes()
 class GradingTest(unittest.TestCase):
-
+     
     def test_align(self):
-        images, times = readImagesAndTimes()
+        global images
         images_cv = images.copy()
-        print(images[0].shape)
+        images_our = images.copy()
         # Align input images
         print("Aligning images ... ")
         alignMTB = cv2.createAlignMTB()
-        alignMTB.process(images, images_cv)
-        
+        alignMTB.process(images, images_cv)        
         images_our = _align.process(images)
-        # images_our = _align.copy_arr(images[0])
-        #for i in range(len(images)):
-            #self.assertEqual(images_cv[i].shape, images_our[i].shape)
+        for i in range(len(images)):
+            self.assertEqual(np.array_equal(images_cv[i], images_our[i]), True)
+            self.assertEqual(images_cv[i].shape, images_our[i].shape)
+        images = images_our
 
+    def test_calCRF(self):
+        global images, times
+        time_cv = times.copy()
+        time_our = times.copy()
+        print("Calculating Camera Response Function (CRF) ... ")
+        calibrateDebevec = cv2.createCalibrateDebevec()
+        resDebevec_cv = calibrateDebevec.process(images, time_cv)
+        resDebevec_our = _calCRF.process(images, time_our)
+        resDebevec_our_np = np.array(resDebevec_our, dtype=np.float32)
+        resDebevec_our_np.resize((256, 1, 3))
+        twoten_np = np.array([20]*(256*1*3), dtype=np.float32)
+        twoten_np.resize((256, 1, 3))
+        sub_np = np.absolute(np.array(resDebevec_our_np) - np.array(resDebevec_our))
+        self.assertGreater(twoten_np.all(), sub_np.all())
+
+        
 
 # vim: set fenc=utf8 ff=unix et sw=4 ts=4 sts=4:

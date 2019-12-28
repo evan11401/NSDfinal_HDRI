@@ -11,8 +11,12 @@ MKLROOT ?=
 MKLINC = -I$(MKLROOT)/include
 LDFLAGS += -L$(MKLROOT)/lib -lmkl_rt -lpthread -lm -ldl
 
+all: _align.so _calCRF.so
+
 _align.so: mod/_align.cpp
-	#$(CXX) $< -o $@  $(CPPFLAGS) 
+	$(CXX) $< -o $@ $(MKLINC) $(CPPFLAGS)  $(LDFLAGS)
+
+_calCRF.so: mod/_calCRF.cpp
 	$(CXX) $< -o $@ $(MKLINC) $(CPPFLAGS)  $(LDFLAGS)
 
 
