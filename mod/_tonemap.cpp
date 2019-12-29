@@ -37,7 +37,6 @@ public:
     void read(const FileNode& fn)  
     {
         FileNode n = fn["name"];
-        CV_Assert(n.isString() && String(n) == name);
         gamma = fn["gamma"];
     }
 
@@ -75,7 +74,6 @@ public:
 
         double max;
         minMaxLoc(gray_img, NULL, &max);
-        CV_Assert(max > 0);
 
         Mat map;
         log(gray_img + 1.0f, map);
@@ -105,7 +103,6 @@ public:
     void read(const FileNode& fn)  
     {
         FileNode n = fn["name"];
-        CV_Assert(n.isString() && String(n) == name);
         gamma = fn["gamma"];
         bias = fn["bias"];
         saturation = fn["saturation"];

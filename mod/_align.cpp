@@ -61,8 +61,6 @@ public:
 
         Mat img0 = _img0.getMat();
         Mat img1 = _img1.getMat();
-        CV_Assert(img0.channels() == 1 && img0.type() == img1.type());
-        CV_Assert(img0.size() == img1.size());
 
         int maxlevel = static_cast<int>(log((double)max(img0.rows, img0.cols)) / log(2.0)) - 1;
         maxlevel = min(maxlevel, max_bits - 1);
@@ -156,7 +154,6 @@ protected:
     void downsample(Mat& src, Mat& dst)
     {
         dst = Mat(src.rows / 2, src.cols / 2, CV_8UC1);
-
         int offset = src.cols * 2;
         uchar *src_ptr = src.ptr();
         uchar *dst_ptr = dst.ptr();

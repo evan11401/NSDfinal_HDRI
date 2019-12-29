@@ -23,10 +23,7 @@ public:
         }
 
         Mat log_response;
-        log(response, log_response);
-        CV_Assert(log_response.rows == LDR_SIZE && log_response.cols == 1 &&
-                  log_response.channels() == channels);
-        
+        log(response, log_response);        
         for(int i=0;i<times.size();i++)
             times[i] = std::log(times[i]);
 

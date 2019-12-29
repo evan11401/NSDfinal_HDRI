@@ -32,9 +32,7 @@ public:
             }
         } else {
             int x_points = static_cast<int>(sqrt(static_cast<double>(samples) * cols / rows));
-            CV_Assert(0 < x_points && x_points <= cols);
             int y_points = samples / x_points;
-            CV_Assert(0 < y_points && y_points <= rows);
             int step_x = cols / x_points;
             int step_y = rows / y_points;
             for(int i = 0, x = step_x / 2; i < x_points; i++, x += step_x) {
@@ -65,7 +63,6 @@ public:
             int k = 0;
             for(size_t i = 0; i < points.size(); i++) {
                 for(size_t j = 0; j < images.size(); j++) {
-                    // val = images[j].at<Vec3b>(points[i].y, points[i].x)[ch]
                     int val = images[j].ptr()[channels*(points[i].y * cols + points[i].x) + ch];
                     float wij = w.at<float>(val);
                     A.at<float>(k, val) = wij;
@@ -113,7 +110,6 @@ public:
     void read(const FileNode& fn) 
     {
         FileNode n = fn["name"];
-        CV_Assert(n.isString() && String(n) == name);
         samples = fn["samples"];
         lambda = fn["lambda"];
         int random_val = fn["random"];

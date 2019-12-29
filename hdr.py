@@ -1,34 +1,23 @@
 import cv2
 import numpy as np
 
-
 def readImagesAndTimes():
-  
   times = np.array([ 1/30.0, 0.25, 2.5, 15.0 ], dtype=np.float32)
-  
   filenames = ["imgs/img_0.033.jpg", "imgs/img_0.25.jpg", "imgs/img_2.5.jpg", "imgs/img_15.jpg"]
-  
   images = []
   for filename in filenames:
     im = cv2.imread(filename)
     images.append(im)
-  
   return images, times
 
 if __name__ == '__main__':
   # Read images and exposure times
   print("Reading images ... ")
-
   images, times = readImagesAndTimes()
-  
-  
   # Align input images
   print("Aligning images ... ")
   alignMTB = cv2.createAlignMTB()
-  print(type(images))
-  for i in range(len(images)):
-    print(type(images[i]))
-  alignMTB.process(images, images)
+  #alignMTB.process(images, images)
   
   # Obtain Camera Response Function (CRF)
   print("Calculating Camera Response Function (CRF) ... ")
@@ -50,27 +39,3 @@ if __name__ == '__main__':
   ldrDrago = 3 * ldrDrago
   cv2.imwrite("ldr-Drago2.jpg", ldrDrago * 255)
   print("saved ldr-Drago.jpg")
-  
-  # # Tonemap using Durand's method obtain 24-bit color image
-  # print("Tonemaping using Durand's method ... ")
-  # tonemapDurand = cv2.createTonemapDurand(1.5,4,1.0,1,1)
-  # ldrDurand = tonemapDurand.process(hdrDebevec)
-  # ldrDurand = 3 * ldrDurand
-  # cv2.imwrite("ldr-Durand.jpg", ldrDurand * 255)
-  # print("saved ldr-Durand.jpg")
-  
-  # Tonemap using Reinhard's method to obtain 24-bit color image
-  print("Tonemaping using Reinhard's method ... ")
-  tonemapReinhard = cv2.createTonemapReinhard(1.5, 0,0,0)
-  ldrReinhard = tonemapReinhard.process(hdrDebevec)
-  cv2.imwrite("ldr-Reinhard2.jpg", ldrReinhard * 255)
-  print("saved ldr-Reinhard.jpg")
-  
-  # Tonemap using Mantiuk's method to obtain 24-bit color image
-  print("Tonemaping using Mantiuk's method ... ")
-  tonemapMantiuk = cv2.createTonemapMantiuk(2.2,0.85, 1.2)
-  ldrMantiuk = tonemapMantiuk.process(hdrDebevec)
-  ldrMantiuk = 3 * ldrMantiuk
-  cv2.imwrite("ldr-Mantiuk2.jpg", ldrMantiuk * 255)
-  print("saved ldr-Mantiuk.jpg")
-

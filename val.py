@@ -29,7 +29,7 @@ exit 0
 ':'''
 
 import unittest
-import timeit
+import time
 import os
 
 import cv2
@@ -66,8 +66,16 @@ class GradingTest(unittest.TestCase):
         images_our = images.copy()
         print("Aligning images ... ")
         alignMTB = cv2.createAlignMTB()
-        alignMTB.process(images, images_cv)        
+        tStart = time.time()
+        alignMTB.process(images, images_cv)   
+        tEnd = time.time()
+        tOril = tEnd - tStart
+        tStart = time.time()
         images_our = _align.process(images)
+        tEnd = time.time()
+        tOur = tEnd - tStart
+        print("tOril:", tOril)
+        print("tOur:", tOur)
         for i in range(len(images)):
             self.assertEqual(np.array_equal(images_cv[i], images_our[i]), True)
             self.assertEqual(images_cv[i].shape, images_our[i].shape)
@@ -79,9 +87,17 @@ class GradingTest(unittest.TestCase):
         time_our = times.copy()
         print("Calculating Camera Response Function (CRF) ... ")
         calibrateDebevec = cv2.createCalibrateDebevec()
+        tStart = time.time()
         resDebevec_cv = calibrateDebevec.process(images, time_cv)
+        tEnd = time.time()
+        tOril = tEnd - tStart
         resDebevec = resDebevec_cv
+        tStart = time.time()
         resDebevec_our = _calCRF.process(images, time_our)
+        tEnd = time.time()
+        tOur = tEnd - tStart
+        print("tOril:", tOril)
+        print("tOur:", tOur)
         resDebevec_our_np = np.array(resDebevec_our, dtype=np.float32)
         resDebevec_our_np.resize((256, 1, 3))        
         self.assertEqual(np.allclose(resDebevec_our_np, resDebevec_cv), True)
@@ -92,10 +108,21 @@ class GradingTest(unittest.TestCase):
         global images, times, resDebevec, hdrDebevec, one
         print("Merging images into one HDR image ... ")
         mergeDebevec = cv2.createMergeDebevec()
+        tStart = time.time()
         hdrDebevec = mergeDebevec.process(images, times, resDebevec)
+        tEnd = time.time()
+        tOril = tEnd - tStart
+        tStart = time.time()
         _merge.process(images, times, resDebevec)
+        tEnd = time.time()
+        tOur = tEnd - tStart        
         cv_file = cv2.FileStorage("result.ext", cv2.FILE_STORAGE_READ)
         hdrDebevec_our = cv_file.getNode("result").mat()
+        tdatEnd = time.time()
+        tOurdat = tdatEnd - tStart
+        print("tOril:", tOril)
+        print("tOur:", tOur)
+        print("tOurdata:", tOurdat)
         self.assertEqual(np.allclose(hdrDebevec_our,hdrDebevec), True)
         
     def test_tonemap(self):
@@ -104,16 +131,32 @@ class GradingTest(unittest.TestCase):
         print("Tonemaping using Gamma and Drago's method ... ")
 
         tonemapGamma = cv2.createTonemap(3)
+        tStart = time.time()
         ldrGamma = tonemapGamma.process(hdrDebevec)
+        tEnd = time.time()
+        tOril = tEnd - tStart
+        tStart = time.time()
         _tonemap.process(hdrDebevec)
+        tEnd = time.time()
+        tOur = tEnd - tStart
+        print("tOril:", tOril)
+        print("tOur:", tOur)
         cv_file = cv2.FileStorage("TonemapGamma.ext", cv2.FILE_STORAGE_READ)
         ldrGamma_our = cv_file.getNode("result").mat()
         ldrGamma_our[np.isnan(ldrGamma_our)] = 0
         self.assertEqual(np.allclose(ldrGamma_our,ldrGamma), True)
 
         tonemapDrago = cv2.createTonemapDrago(1.0, 0.7)
+        tStart = time.time()
         ldrDrago = tonemapDrago.process(hdrDebevec)
+        tEnd = time.time()
+        tOril = tEnd - tStart
+        tStart = time.time()
         _tonemap.processDrag(hdrDebevec)
+        tEnd = time.time()
+        tOur = tEnd - tStart
+        print("tOril:", tOril)
+        print("tOur:", tOur)
         cv_file = cv2.FileStorage("TonemapDrag.ext", cv2.FILE_STORAGE_READ)
         ldrDrag_our = cv_file.getNode("result").mat()
         ldrDrag_our[np.isnan(ldrDrag_our)] = 0
