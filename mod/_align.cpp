@@ -1,4 +1,4 @@
-#include "env.hpp"
+#include "tool.cpp"
 using namespace std;
 
 class Align
@@ -199,7 +199,6 @@ protected:
 std::vector<py::array_t<unsigned char>> process(std::vector<py::array_t<unsigned char>> src){
     
     Align obj = Align();
-    //obj.process(src, ret_vector);
     vector<Mat> mat_src, mat_ret;
     for(uint i=0;i<src.size();i++){
         py::buffer_info buf = src[i].request();

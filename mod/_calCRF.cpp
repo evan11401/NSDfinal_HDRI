@@ -1,4 +1,4 @@
-#include "env.hpp"
+#include "tool.cpp"
 
 
 class calCRF
@@ -42,15 +42,8 @@ public:
                     }
                 }
             }
-            // we can have slightly less grid points than specified
-            //samples = static_cast<int>(points.size());
+            
         }
-        
-        // we need enough equations to ensure a sufficiently overdetermined system
-        // (maybe only as a warning)
-        //CV_Assert(points.size() * (images.size() - 1) >= LDR_SIZE);
-
-        // solve for imaging system response function, over each channel separately
         std::vector<Mat> result_split(channels);
         
         for(int ch = 0; ch < channels; ch++) {
