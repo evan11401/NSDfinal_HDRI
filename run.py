@@ -9,18 +9,13 @@ import _align
 import _calCRF
 import _merge
 import _tonemap
-
 def readImagesAndTimes():
-  
     times = np.array([ 1/30.0, 0.25, 2.5, 15.0 ], dtype=np.float32)
-  
     filenames = ["imgs/img_0.033.jpg", "imgs/img_0.25.jpg", "imgs/img_2.5.jpg", "imgs/img_15.jpg"]
-  
     images = []
     for filename in filenames:
         im = cv2.imread(filename)
         images.append(im)
-  
     return images, times
 
 if __name__ == '__main__':
