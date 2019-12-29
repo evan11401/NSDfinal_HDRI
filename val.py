@@ -20,7 +20,7 @@ fi
 make ; ret=$?
 if [ 0 -ne $ret ] ; then echo "$fail_msg" ; exit $ret ; fi
 
-python3 -m pytest $test_path -v -s ; ret=$?
+python -m pytest $test_path -v -s ; ret=$?
 if [ 0 -ne $ret ] ; then echo "$fail_msg" ; exit $ret ; fi
 
 echo "validation pass"
@@ -56,7 +56,6 @@ def readImagesAndTimes():
   return images, times
 
 images, times = readImagesAndTimes()
-one = np.array([1]*(256*1*3), dtype=np.float32)
 resDebevec = None
 hdrDebevec = None
 class GradingTest(unittest.TestCase):
@@ -84,11 +83,9 @@ class GradingTest(unittest.TestCase):
         resDebevec = resDebevec_cv
         resDebevec_our = _calCRF.process(images, time_our)
         resDebevec_our_np = np.array(resDebevec_our, dtype=np.float32)
-        resDebevec_our_np.resize((256, 1, 3))
-        twoten_np = np.array([20]*(256*1*3), dtype=np.float32)
-        twoten_np.resize((256, 1, 3))
-        sub_np = np.absolute(np.array(resDebevec_our_np) - np.array(resDebevec_our))
-        self.assertGreater(twoten_np.all(), sub_np.all())
+        resDebevec_our_np.resize((256, 1, 3))        
+        self.assertEqual(np.allclose(resDebevec_our_np, resDebevec_cv), True)
+
         
 
     def test_merge(self):
@@ -99,23 +96,31 @@ class GradingTest(unittest.TestCase):
         _merge.process(images, times, resDebevec)
         cv_file = cv2.FileStorage("result.ext", cv2.FILE_STORAGE_READ)
         hdrDebevec_our = cv_file.getNode("result").mat()
-        sub_np = np.absolute(np.subtract(hdrDebevec_our, hdrDebevec))
-        
-        self.assertGreater(one.all(), sub_np.all())
+        self.assertEqual(np.allclose(hdrDebevec_our,hdrDebevec), True)
         
     def test_tonemap(self):
         global hdrDebevec, one
+        
         print("Tonemaping using Gamma and Drago's method ... ")
+
         tonemapGamma = cv2.createTonemap(3)
         ldrGamma = tonemapGamma.process(hdrDebevec)
         _tonemap.process(hdrDebevec)
         cv_file = cv2.FileStorage("TonemapGamma.ext", cv2.FILE_STORAGE_READ)
         ldrGamma_our = cv_file.getNode("result").mat()
-        sub_np = np.absolute(np.subtract(ldrGamma_our, ldrGamma))
-        self.assertGreater(one.all(), sub_np.all())
+        self.assertEqual(np.allclose(ldrGamma_our,ldrGamma), True)
+
+        tonemapDrago = cv2.createTonemapDrago(1.0, 0.7)
+        ldrDrago = tonemapDrago.process(hdrDebevec)
+        _tonemap.processDrag(hdrDebevec)
+        cv_file = cv2.FileStorage("TonemapDrag.ext", cv2.FILE_STORAGE_READ)
+        ldrDrag_our = cv_file.getNode("result").mat()
+        self.assertEqual(np.allclose(ldrDrag_our,ldrDrago), True)
+
         hdrDebevec = 3 * hdrDebevec
         cv2.imwrite("hdrDebevec.jpg", hdrDebevec * 255)
         print("saved hdrDebevec.jpg")
+
         ldrGamma = 3 * ldrGamma
         cv2.imwrite("ldrGamma_cv.jpg", ldrGamma * 255)
         print("saved ldrGamma_cv.jpg")
@@ -123,6 +128,12 @@ class GradingTest(unittest.TestCase):
         cv2.imwrite("ldrGamma_our.jpg", ldrGamma_our * 255)
         print("saved ldrGamma_our.jpg")
 
+        ldrDrag_our = 3 * ldrDrag_our
+        cv2.imwrite("ldrDrag_our.jpg", ldrDrag_our * 255)
+        print("saved ldrDrag_our.jpg")
+        ldrDrago = 3 * ldrDrago
+        cv2.imwrite("ldrDrago.jpg", ldrDrago * 255)
+        print("saved ldrDrago.jpg")
 
         
 

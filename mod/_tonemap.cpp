@@ -13,7 +13,7 @@ public:
     {
     }
 
-    void process(Mat src)  
+    Mat process(Mat src)  
     {
         Mat dst;
 
@@ -28,6 +28,7 @@ public:
         pow(dst, 1.0f / gamma, dst);
         cv::FileStorage file("TonemapGamma.ext", cv::FileStorage::WRITE);
         file << "result" << dst;
+        return dst;
     }
 
     float getGamma() const   { return gamma; }
@@ -49,7 +50,7 @@ protected:
 class TonemapDrag
 {
 public:
-    TonemapDrag(float _gamma=1.0f, float _saturation=1.0f, float _bias=1.0f) :
+    TonemapDrag(float _gamma=1.0f, float _saturation=0.7f, float _bias=0.85f) :
         name("TonemapDrag"),
         gamma(_gamma),
         saturation(_saturation),
@@ -57,15 +58,12 @@ public:
     {
     }
 
-    void process(InputArray _src, OutputArray _dst)  
+    void process(Mat src)  
     {
-        Mat src = _src.getMat();
-        CV_Assert(!src.empty());
-        _dst.create(src.size(), CV_32FC3);
-        Mat img = _dst.getMat();
+        Mat img;
 
-        Ptr<Tonemap> linear = createTonemap(1.0f);
-        linear->process(src, img);
+        TonemapGamma linear = TonemapGamma(1.0f);
+        img = linear.process(src);
 
         Mat gray_img;
         cvtColor(img, gray_img, COLOR_RGB2GRAY);
@@ -89,8 +87,10 @@ public:
 
         mapLuminance(img, img, gray_img, map, saturation);
 
-        linear->setGamma(gamma);
-        linear->process(img, img);
+        linear.setGamma(gamma);
+        img = linear.process(img);
+        cv::FileStorage file("TonemapDrag.ext", cv::FileStorage::WRITE);
+        file << "result" << img;
     }
 
     float getGamma() const   { return gamma; }
@@ -118,11 +118,16 @@ protected:
 void process(py::array_t<float> hdrDebevec){
     Mat hdr_mat = debs_pytocpp(hdrDebevec);
     TonemapGamma objGamma = TonemapGamma();
-    TonemapDrag objGrago = TonemapDrag();
     objGamma.setGamma(3);
     objGamma.process(hdr_mat);
 }
+void processDrag(py::array_t<float> hdrDebevec){
+    Mat hdr_mat = debs_pytocpp(hdrDebevec);
+    TonemapDrag objGrago = TonemapDrag();
+    objGrago.process(hdr_mat);
+}
 PYBIND11_MODULE(_tonemap, m) {
 	m.doc() = "_tonemap";    
-     m.def("process", &process, "process");
+    m.def("process", &process, "process");
+    m.def("processDrag", &processDrag, "processDrag");
 }
