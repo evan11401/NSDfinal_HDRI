@@ -30,3 +30,4 @@ _tonemap.so: mod/_tonemap.cpp
 clean:
 	rm -rf  *.so
 	rm -rf  *.ext
+	rm -rf  *.jpg

@@ -29,7 +29,7 @@ if __name__ == '__main__':
   mergeDebevec = cv2.createMergeDebevec()
   hdrDebevec = mergeDebevec.process(images, times, responseDebevec)
   # Save HDR image.
-  cv2.imwrite("hdrDebevec.jpg", hdrDebevec)
+  cv2.imwrite("hdrDebevec2.jpg", hdrDebevec)
   print("saved hdrDebevec.jpg ")
   
   # Tonemap using Drago's method to obtain 24-bit color image
@@ -37,5 +37,5 @@ if __name__ == '__main__':
   tonemapDrago = cv2.createTonemapDrago(1.0, 0.7)
   ldrDrago = tonemapDrago.process(hdrDebevec)
   ldrDrago = 3 * ldrDrago
-  cv2.imwrite("ldr-ldrDrago.jpg", ldrDrago * 255)
-  print("saved ldr-ldrDrago.jpg")
+  cv2.imwrite("ldr-Drago2.jpg", ldrDrago * 255)
+  print("saved ldr-Drago.jpg")

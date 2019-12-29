@@ -31,6 +31,7 @@ exit 0
 import unittest
 import time
 import os
+import sys
 
 import cv2
 import numpy as np
@@ -99,13 +100,14 @@ class GradingTest(unittest.TestCase):
         print("tOril:", tOril)
         print("tOur:", tOur)
         resDebevec_our_np = np.array(resDebevec_our, dtype=np.float32)
-        resDebevec_our_np.resize((256, 1, 3))        
+        resDebevec_our_np.resize((256, 1, 3))     
+        #resDebevec = resDebevec_our   
         self.assertEqual(np.allclose(resDebevec_our_np, resDebevec_cv), True)
 
         
 
     def test_merge(self):
-        global images, times, resDebevec, hdrDebevec, one
+        global images, times, resDebevec, hdrDebevec
         print("Merging images into one HDR image ... ")
         mergeDebevec = cv2.createMergeDebevec()
         tStart = time.time()
@@ -126,7 +128,7 @@ class GradingTest(unittest.TestCase):
         self.assertEqual(np.allclose(hdrDebevec_our,hdrDebevec), True)
         
     def test_tonemap(self):
-        global hdrDebevec, one
+        global hdrDebevec
         
         print("Tonemaping using Gamma and Drago's method ... ")
 

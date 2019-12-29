@@ -106,7 +106,7 @@ public:
         Mat src = _src.getMat();
         _dst.create(src.size(), src.type());
         Mat dst = _dst.getMat();
-
+        
         Mat res = Mat::zeros(src.size(), src.type());
         int width = src.cols - abs(shift.x);
         int height = src.rows - abs(shift.y);
@@ -205,8 +205,11 @@ std::vector<py::array_t<unsigned char>> process(std::vector<py::array_t<unsigned
         py::buffer_info buf = src[i].request();
         Mat mat(buf.shape[0], buf.shape[1], CV_8UC3, (unsigned char*)buf.ptr);
         mat_src.push_back(mat);
+        mat_ret.push_back(mat);
     }
+    
     obj.process(mat_src, mat_ret);
+    
     std::vector<py::array_t<unsigned char>> ret_vector;
     for(int i=0;i<mat_ret.size();i++){
         py::array_t<unsigned char> dst = py::array_t<unsigned char>({ mat_ret[i].rows,mat_ret[i].cols,3}, mat_ret[i].data);
