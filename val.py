@@ -15,22 +15,16 @@ if [ -z "$SKIP_CLEAN" ] ; then
         echo "$fail_msg for uncleanness"
         exit 1
     fi
-    echo "GET POINT 1"
 fi
 
 make ; ret=$?
 if [ 0 -ne $ret ] ; then echo "$fail_msg" ; exit $ret ; fi
-if [ -z "$SKIP_CLEAN" ] ; then
-    echo "GET POINT 1"
-fi
 
 python3 -m pytest $test_path -v -s ; ret=$?
 if [ 0 -ne $ret ] ; then echo "$fail_msg" ; exit $ret ; fi
 
 echo "validation pass"
-if [ -z "$SKIP_CLEAN" ] ; then
-    echo "GET POINT 3"
-fi
+
 exit 0
 ':'''
 
@@ -46,6 +40,7 @@ import scipy.io as sio
 import _align
 import _calCRF
 import _merge
+import _tonemap
 
 def readImagesAndTimes():
   
@@ -61,14 +56,15 @@ def readImagesAndTimes():
   return images, times
 
 images, times = readImagesAndTimes()
+one = np.array([1]*(256*1*3), dtype=np.float32)
 resDebevec = None
+hdrDebevec = None
 class GradingTest(unittest.TestCase):
      
     def test_align(self):
         global images
         images_cv = images.copy()
         images_our = images.copy()
-        # Align input images
         print("Aligning images ... ")
         alignMTB = cv2.createAlignMTB()
         alignMTB.process(images, images_cv)        
@@ -96,18 +92,36 @@ class GradingTest(unittest.TestCase):
         
 
     def test_merge(self):
-        global images, times, resDebevec
-        # Merge images into an HDR linear image
+        global images, times, resDebevec, hdrDebevec, one
         print("Merging images into one HDR image ... ")
         mergeDebevec = cv2.createMergeDebevec()
         hdrDebevec = mergeDebevec.process(images, times, resDebevec)
         _merge.process(images, times, resDebevec)
         cv_file = cv2.FileStorage("result.ext", cv2.FILE_STORAGE_READ)
         hdrDebevec_our = cv_file.getNode("result").mat()
-        sub_np = (np.subtract(hdrDebevec_our, hdrDebevec))
-        one = np.array([1]*(256*1*3), dtype=np.float32)
+        sub_np = np.absolute(np.subtract(hdrDebevec_our, hdrDebevec))
+        
         self.assertGreater(one.all(), sub_np.all())
         
+    def test_tonemap(self):
+        global hdrDebevec, one
+        print("Tonemaping using Gamma and Drago's method ... ")
+        tonemapGamma = cv2.createTonemap(3)
+        ldrGamma = tonemapGamma.process(hdrDebevec)
+        _tonemap.process(hdrDebevec)
+        cv_file = cv2.FileStorage("TonemapGamma.ext", cv2.FILE_STORAGE_READ)
+        ldrGamma_our = cv_file.getNode("result").mat()
+        sub_np = np.absolute(np.subtract(ldrGamma_our, ldrGamma))
+        self.assertGreater(one.all(), sub_np.all())
+        hdrDebevec = 3 * hdrDebevec
+        cv2.imwrite("hdrDebevec.jpg", hdrDebevec * 255)
+        print("saved hdrDebevec.jpg")
+        ldrGamma = 3 * ldrGamma
+        cv2.imwrite("ldrGamma_cv.jpg", ldrGamma * 255)
+        print("saved ldrGamma_cv.jpg")
+        ldrGamma_our = 3 * ldrGamma_our
+        cv2.imwrite("ldrGamma_our.jpg", ldrGamma_our * 255)
+        print("saved ldrGamma_our.jpg")
 
 
         

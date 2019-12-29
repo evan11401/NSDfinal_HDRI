@@ -52,7 +52,17 @@ Mat linearResponse(int channels)
     }
     return response;
 }
-
+void mapLuminance(Mat src, Mat dst, Mat lum, Mat new_lum, float saturation)
+{
+    std::vector<Mat> channels(3);
+    split(src, channels);
+    for(int i = 0; i < 3; i++) {
+        channels[i] = channels[i].mul(1.0f / lum);
+        pow(channels[i], saturation, channels[i]);
+        channels[i] = channels[i].mul(new_lum);
+    }
+    merge(channels, dst);
+}
 std::vector<Mat> images_pytocpp(std::vector<py::array_t<unsigned char>> src)
 {
     std::vector<Mat> mat_src;
