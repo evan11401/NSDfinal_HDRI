@@ -11,7 +11,7 @@ MKLROOT ?=
 MKLINC = -I$(MKLROOT)/include
 LDFLAGS += -L$(MKLROOT)/lib -lmkl_rt -lpthread -lm -ldl
 
-all: _align.so _calCRF.so
+all: _align.so _calCRF.so _merge.so
 
 _align.so: mod/_align.cpp
 	$(CXX) $< -o $@ $(MKLINC) $(CPPFLAGS)  $(LDFLAGS)
@@ -19,8 +19,12 @@ _align.so: mod/_align.cpp
 _calCRF.so: mod/_calCRF.cpp
 	$(CXX) $< -o $@ $(MKLINC) $(CPPFLAGS)  $(LDFLAGS)
 
+_merge.so: mod/_merge.cpp
+	$(CXX) $< -o $@ $(MKLINC) $(CPPFLAGS)  $(LDFLAGS)
+
 
 
 .PHONY: clean test branch
 clean:
 	rm -rf  *.so
+	rm -rf  *.ext

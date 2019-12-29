@@ -40,9 +40,12 @@ import os
 
 import cv2
 import numpy as np
+import scipy.io as sio
+
 
 import _align
 import _calCRF
+import _merge
 
 def readImagesAndTimes():
   
@@ -58,6 +61,7 @@ def readImagesAndTimes():
   return images, times
 
 images, times = readImagesAndTimes()
+resDebevec = None
 class GradingTest(unittest.TestCase):
      
     def test_align(self):
@@ -75,12 +79,13 @@ class GradingTest(unittest.TestCase):
         images = images_our
 
     def test_calCRF(self):
-        global images, times
+        global images, times, resDebevec
         time_cv = times.copy()
         time_our = times.copy()
         print("Calculating Camera Response Function (CRF) ... ")
         calibrateDebevec = cv2.createCalibrateDebevec()
         resDebevec_cv = calibrateDebevec.process(images, time_cv)
+        resDebevec = resDebevec_cv
         resDebevec_our = _calCRF.process(images, time_our)
         resDebevec_our_np = np.array(resDebevec_our, dtype=np.float32)
         resDebevec_our_np.resize((256, 1, 3))
@@ -88,6 +93,22 @@ class GradingTest(unittest.TestCase):
         twoten_np.resize((256, 1, 3))
         sub_np = np.absolute(np.array(resDebevec_our_np) - np.array(resDebevec_our))
         self.assertGreater(twoten_np.all(), sub_np.all())
+        
+
+    def test_merge(self):
+        global images, times, resDebevec
+        # Merge images into an HDR linear image
+        print("Merging images into one HDR image ... ")
+        mergeDebevec = cv2.createMergeDebevec()
+        hdrDebevec = mergeDebevec.process(images, times, resDebevec)
+        _merge.process(images, times, resDebevec)
+        cv_file = cv2.FileStorage("result.ext", cv2.FILE_STORAGE_READ)
+        hdrDebevec_our = cv_file.getNode("result").mat()
+        sub_np = (np.subtract(hdrDebevec_our, hdrDebevec))
+        one = np.array([1]*(256*1*3), dtype=np.float32)
+        self.assertGreater(one.all(), sub_np.all())
+        
+
 
         
 

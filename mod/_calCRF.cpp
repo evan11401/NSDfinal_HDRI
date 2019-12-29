@@ -1,28 +1,6 @@
 #include "env.hpp"
 
 
-Mat triangleWeights()
-{
-    // hat function
-    Mat w(LDR_SIZE, 1, CV_32F);
-    int half = LDR_SIZE / 2;
-    for(int i = 0; i < LDR_SIZE; i++) {
-        w.at<float>(i) = i < half ? i + 1.0f : LDR_SIZE - i;
-    }
-    return w;
-}
-void checkImageDimensions(const std::vector<Mat>& images)
-{
-    CV_Assert(!images.empty());
-    int width = images[0].cols;
-    int height = images[0].rows;
-    int type = images[0].type();
-
-    for(size_t i = 0; i < images.size(); i++) {
-        CV_Assert(images[i].cols == width && images[i].rows == height);
-        CV_Assert(images[i].type() == type);
-    }
-}
 class calCRF
 {
 public:
@@ -153,19 +131,10 @@ protected:
 std::vector<std::vector<float>> process(std::vector<py::array_t<unsigned char>> src, py::array_t<float> times){
     
     calCRF obj = calCRF();
-    std::vector<Mat> mat_src;
+    std::vector<Mat> mat_src = images_pytocpp(src);
+    std::vector<float> time_vec = times_pytocpp(times);
     Mat mat_ret ;
-    for(uint i=0;i<src.size();i++){
-        py::buffer_info buf = src[i].request();
-        Mat mat(buf.shape[0], buf.shape[1], CV_8UC3, (unsigned char*)buf.ptr);
-        mat_src.push_back(mat);
-    }
-    py::buffer_info time_buf = times.request();
-    float *time_ptr = (float *) time_buf.ptr;
-    std::vector<float> time_vec;
-    for(uint i=0;i<time_buf.shape[0];i++){
-        time_vec.push_back(time_ptr[i]);
-    }
+    
     std::vector<Mat> ret_spi = obj.process(mat_src, mat_ret, time_vec);
     std::vector<std::vector<float>> ret_vector;
     ret_vector.resize(256);
