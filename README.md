@@ -1,6 +1,34 @@
 # NSDfinal_HDRI
 NCTUCS NSD final project-High Dynamic Range Imaging using Multiple Exposure Images with Tone Mapping
 
+# Install
+### make sure opencv c++ installed
+
+### to create pybind objects
+```
+make clean
+make
+```
+### to run whole code
+```
+python run.py
+```
+### to run the test
+```
+./val.py
+```
+
+### to run in other images
+```
+#at run.py line 13,14
+times = np.array([ Your Shutter's Times ], dtype=np.float32)
+filenames = [Your Image Path]
+```
+### then run
+```
+python run.py
+```
+
 # Reference
 
 ## Image Alignment
